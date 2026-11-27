@@ -367,61 +367,69 @@
       return field ? field.value.trim() : '';
     }
 
-    membershipForm.addEventListener('submit', async event => {
-      event.preventDefault();
 
-      // Preserve the browser's required-field and email validation.
-      if (!membershipForm.reportValidity()) return;
+membershipForm.addEventListener('submit', async event => {
+  event.preventDefault();
 
-      const payload = {
-        memberType: getFormValue('member_type'),
-        fullName: getFormValue('full_name'),
-        nickname: getFormValue('nickname'),
-        location: getFormValue('location'),
-        homeAddress: getFormValue('home_address'),
-        contactNumber: getFormValue('contact_number'),
-        emailAddress: getFormValue('email'),
-        licenseExpiry: getFormValue('license_expiry'),
-        mvExpiry: getFormValue('mv_expiry'),
-        plateNo: getFormValue('plate_no'),
-        emergencyContact: getFormValue('emergency_contact'),
-        fbProfileLink: getFormValue('fb_profile_link'),
-        privacyConsent: membershipForm.querySelector('[name="privacy_consent"]').checked
-      };
+  if (!membershipForm.reportValidity()) return;
 
-      submitButton.disabled = true;
-      submitButton.textContent = 'Submitting…';
-      formMessage.textContent = 'Sending your application. Please wait…';
+  const payload = {
+    memberType: getFormValue('member_type'),
+    fullName: getFormValue('full_name'),
+    nickname: getFormValue('nickname'),
+    location: getFormValue('location'),
+    homeAddress: getFormValue('home_address'),
+    contactNumber: getFormValue('contact_number'),
+    emailAddress: getFormValue('email'),
+    licenseExpiry: getFormValue('license_expiry'),
+    mvExpiry: getFormValue('mv_expiry'),
+    plateNo: getFormValue('plate_no'),
+    emergencyContact: getFormValue('emergency_contact'),
+    fbProfileLink: getFormValue('fb_profile_link'),
+    privacyConsent: membershipForm.querySelector('[name="privacy_consent"]').checked
+  };
 
-      try {
-        // Apps Script accepts this simple POST without a browser CORS preflight.
-        // no-cors makes the response opaque, so the browser cannot verify the sheet write.
-        await fetch(OGPH_APPLICATION_ENDPOINT, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload)
-        });
+  submitButton.disabled = true;
+  submitButton.textContent = 'Submitting…';
+  formMessage.textContent = 'Sending your application. Please wait…';
 
-        formMessage.textContent =
-  'Application Submitted Successfully! Thank you for your interest in joining One Gravis Philippines (OGPH). Your application has been received and is now Pending review by our officers. We will contact you regarding the status of your application.';
-
-submitButton.textContent = 'Application Submitted Successfully';
-
-      // Reset all form fields after submission
-        document.getElementById('membership-form').reset();
-        
-      } catch (error) {
-        console.error('OGPH application submission error:', error);
-        formMessage.textContent =
-          'We could not send your application. Please check your internet connection and try again.';
-        submitButton.textContent = originalSubmitLabel;
-      } finally {
-        // Re-enable after the request completes. Check the sheet before retrying
-        // because the browser cannot read the Apps Script response in no-cors mode.
-        submitButton.disabled = false;
-      }
+  // STEP 1: Submit application
+  try {
+    await fetch(OGPH_APPLICATION_ENDPOINT, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify(payload)
     });
-  </script>
+
+  } catch (error) {
+    console.error('OGPH submission error:', error);
+
+    formMessage.textContent =
+      'We could not send your application. Please check your internet connection and try again.';
+
+    submitButton.disabled = false;
+    submitButton.textContent = originalSubmitLabel;
+    return;
+  }
+
+  // STEP 2: Display success message
+  formMessage.textContent =
+    'Application Submitted Successfully! Thank you for your interest in joining One Gravis Philippines (OGPH). Your application has been received and is now Pending review by our officers. We will contact you regarding the status of your application.';
+
+  // STEP 3: Reset the form separately
+  try {
+    membershipForm.reset();
+  } catch (resetError) {
+    console.error('OGPH form reset error:', resetError);
+  }
+
+  // STEP 4: Restore the submit button
+  submitButton.disabled = false;
+  submitButton.textContent = originalSubmitLabel;
+});
+</script>
 </body>
 </html>
