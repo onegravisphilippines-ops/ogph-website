@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>One Gravis Philippines | One Goal, One Pride, One Happiness</title>motorcycle
+  <title>One Gravis Philippines | One Goal, One Pride, One Happiness</title>
   <meta name="description" content="Discover One Gravis Philippines, a motorcycle riding community built on friendship, respect, discipline and shared adventures. Learn about OGPH and apply to join.">
   <meta name="theme-color" content="#111318">
   <meta property="og:title" content="One Gravis Philippines">
@@ -354,64 +354,69 @@
       toggle.setAttribute('aria-expanded', 'false');
     }));
     document.querySelector('#year').textContent = new Date().getFullYear();
-    
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxamXDFY8qffXvkL4L53QKc2uyjtU3OGKt_PUc4ikH_Q5qxIu3oaZKXruhLp_cavo60/exec";
+    // OGPH membership application endpoint (Google Apps Script Web App)
+    const OGPH_APPLICATION_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxamXDFY8qffXvkL4L53QKc2uyjtU3OGKt_PUc4ikH_Q5qxIu3oaZKXruhLp_cavo60/exec';
 
-const membershipForm = document.querySelector('#membership-form');
-const formMessage = document.querySelector('#form-message');
-const submitButton = membershipForm.querySelector('button[type="submit"]');
+    const membershipForm = document.querySelector('#membership-form');
+    const formMessage = document.querySelector('#form-message');
+    const submitButton = membershipForm.querySelector('button[type="submit"]');
+    const originalSubmitLabel = submitButton.textContent;
 
-membershipForm.addEventListener('submit', async event => {
-  event.preventDefault();
+    function getFormValue(name) {
+      const field = membershipForm.querySelector('[name="' + name + '"]');
+      return field ? field.value.trim() : '';
+    }
 
-  const payload = {
-    memberType: membershipForm.elements.member_type.value,
-    fullName: membershipForm.elements.full_name.value,
-    nickname: membershipForm.elements.nickname.value,
-    location: membershipForm.elements.location.value,
-    homeAddress: membershipForm.elements.home_address.value,
-    contactNumber: membershipForm.elements.contact_number.value,
-    emailAddress: membershipForm.elements.email.value,
-    licenseExpiry: membershipForm.elements.license_expiry.value,
-    mvExpiry: membershipForm.elements.mv_expiry.value,
-    plateNo: membershipForm.elements.plate_no.value,
-    emergencyContact: membershipForm.elements.emergency_contact.value,
-    fbProfileLink: membershipForm.elements.fb_profile_link.value,
-    privacyConsent: membershipForm.elements.privacy_consent.checked
-  };
+    membershipForm.addEventListener('submit', async event => {
+      event.preventDefault();
 
-  if (SCRIPT_URL.includes("https://script.google.com/macros/s/AKfycbxamXDFY8qffXvkL4L53QKc2uyjtU3OGKt_PUc4ikH_Q5qxIu3oaZKXruhLp_cavo60/exec")) {
-    formMessage.textContent = "Website connection is not configured yet.";
-    return;
-  }
+      // Preserve the browser's required-field and email validation.
+      if (!membershipForm.reportValidity()) return;
 
-  submitButton.disabled = true;
-  submitButton.textContent = "Submitting...";
-  formMessage.textContent = "Please wait while we send your application.";
+      const payload = {
+        memberType: getFormValue('member_type'),
+        fullName: getFormValue('full_name'),
+        nickname: getFormValue('nickname'),
+        location: getFormValue('location'),
+        homeAddress: getFormValue('home_address'),
+        contactNumber: getFormValue('contact_number'),
+        emailAddress: getFormValue('email'),
+        licenseExpiry: getFormValue('license_expiry'),
+        mvExpiry: getFormValue('mv_expiry'),
+        plateNo: getFormValue('plate_no'),
+        emergencyContact: getFormValue('emergency_contact'),
+        fbProfileLink: getFormValue('fb_profile_link'),
+        privacyConsent: membershipForm.querySelector('[name="privacy_consent"]').checked
+      };
 
-  try {
-    await fetch(SCRIPT_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8"
-      },
-      body: JSON.stringify(payload)
+      submitButton.disabled = true;
+      submitButton.textContent = 'Submitting…';
+      formMessage.textContent = 'Sending your application. Please wait…';
+
+      try {
+        // Apps Script accepts this simple POST without a browser CORS preflight.
+        // no-cors makes the response opaque, so the browser cannot verify the sheet write.
+        await fetch(OGPH_APPLICATION_ENDPOINT, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+
+        formMessage.textContent =
+          'Your application request was sent. The browser cannot confirm the Google Sheets save, so please avoid submitting again until an OGPH officer checks the New Member Applications sheet.';
+        submitButton.textContent = 'Request Sent — Awaiting Verification';
+      } catch (error) {
+        console.error('OGPH application submission error:', error);
+        formMessage.textContent =
+          'We could not send your application. Please check your internet connection and try again.';
+        submitButton.textContent = originalSubmitLabel;
+      } finally {
+        // Re-enable after the request completes. Check the sheet before retrying
+        // because the browser cannot read the Apps Script response in no-cors mode.
+        submitButton.disabled = false;
+      }
     });
-
-    formMessage.textContent =
-      "Your application submission request has been sent. Please verify its receipt with an OGPH officer.";
-
-  } catch (error) {
-    formMessage.textContent =
-      "Unable to send your application. Please check your internet connection and try again.";
-
-  } finally {
-    submitButton.disabled = false;
-    submitButton.textContent = "Submit Membership Application";
-  }
-});
-
   </script>
 </body>
 </html>
