@@ -144,6 +144,127 @@
       .menu-toggle{padding:8px}
       .hero{min-height:540px}
     }
+    /* OGPH Automatic Gallery Slideshow */
+.gallery-slideshow {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: #090b0f;
+  border: 1px solid var(--line);
+}
+
+.gallery-slides {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+
+.gallery-slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 1s ease, visibility 1s ease;
+  margin: 0;
+}
+
+.gallery-slide.active {
+  opacity: 1;
+  visibility: visible;
+  z-index: 1;
+}
+
+.gallery-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 0;
+  border-radius: 0;
+}
+
+.gallery-slide figcaption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 30px 20px 18px;
+  color: #fff;
+  font-weight: 800;
+  font-size: 16px;
+  background: linear-gradient(transparent, rgba(0,0,0,.85));
+}
+
+.gallery-control {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  width: 46px;
+  height: 46px;
+  border: 1px solid rgba(255,255,255,.4);
+  border-radius: 50%;
+  background: rgba(0,0,0,.6);
+  color: white;
+  font-size: 25px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.gallery-control:hover {
+  background: var(--red);
+}
+
+.gallery-prev { left: 15px; }
+.gallery-next { right: 15px; }
+
+.gallery-dots {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 18px;
+}
+
+.gallery-dot {
+  width: 11px;
+  height: 11px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #687080;
+  cursor: pointer;
+}
+
+.gallery-dot.active {
+  background: var(--red);
+  transform: scale(1.3);
+}
+
+@media(max-width:620px) {
+  .gallery-slides {
+    aspect-ratio: 4 / 3;
+  }
+
+  .gallery-control {
+    width: 38px;
+    height: 38px;
+    font-size: 21px;
+  }
+
+  .gallery-slide figcaption {
+    font-size: 13px;
+    padding: 25px 12px 12px;
+  }
+}
+
+@media(prefers-reduced-motion:reduce) {
+  .gallery-slide {
+    transition: none;
+  }
+  }
   </style>
 </head>
 <body>
@@ -230,20 +351,69 @@
       </div>
     </section>
 
-    <section id="gallery" style="background:#151922">
-      <div class="container">
-        <div class="section-head">
-          <div class="eyebrow">Moments on the road</div>
-          <h2>The OGPH experience</h2>
-          <p>A look at the places we explore and the people who make every ride memorable.</p>
-        </div>
-        <div class="grid three gallery">
-          <figure><img src="images/ogph-kaybiang-tunnel.jpg" width="768" height="432" alt="OGPH motorcycle ride at Kaybiang Tunnel" loading="lazy"><figcaption>Road trips and scenic destinations</figcaption></figure>
-          <figure><img src="images/ogph-gathering.jpg" width="768" height="432" alt="OGPH members at a group gathering" loading="lazy"><figcaption>Fellowship and community gatherings</figcaption></figure>
-          <figure><img src="images/ogph-motorcycle-lineup.jpg" width="768" height="432" alt="Motorcycles lined up during an OGPH ride" loading="lazy"><figcaption>United by our passion for riding</figcaption></figure>
-        </div>
+    <section id="gallery" styl<section id="gallery" style="background:#151922">
+  <div class="container">
+
+    <div class="section-head">
+      <div class="eyebrow">Moments on the road</div>
+      <h2>The OGPH experience</h2>
+      <p>A look at the places we explore and the people who make every ride memorable.</p>
+    </div>
+
+    <div class="gallery-slideshow" id="ogph-gallery">
+
+      <div class="gallery-slides">
+
+        <figure class="gallery-slide active">
+          <img
+            src="images/ogph-kaybiang-tunnel.jpg"
+            alt="OGPH motorcycle ride at Kaybiang Tunnel"
+            loading="eager">
+          <figcaption>Road trips and scenic destinations</figcaption>
+        </figure>
+
+        <figure class="gallery-slide">
+          <img
+            src="images/ogph-gathering.jpg"
+            alt="OGPH members at a group gathering"
+            loading="lazy">
+          <figcaption>Fellowship and community gatherings</figcaption>
+        </figure>
+
+        <figure class="gallery-slide">
+          <img
+            src="images/ogph-motorcycle-lineup.jpg"
+            alt="Motorcycles lined up during an OGPH ride"
+            loading="lazy">
+          <figcaption>United by our passion for riding</figcaption>
+        </figure>
+
       </div>
-    </section>
+
+      <button class="gallery-control gallery-prev"
+        type="button"
+        aria-label="Previous photo">
+        &#10094;
+      </button>
+
+      <button class="gallery-control gallery-next"
+        type="button"
+        aria-label="Next photo">
+        &#10095;
+      </button>
+
+      <div class="gallery-dots" aria-label="Gallery navigation">
+        <button class="gallery-dot active" type="button"
+          aria-label="Show photo 1"></button>
+        <button class="gallery-dot" type="button"
+          aria-label="Show photo 2"></button>
+        <button class="gallery-dot" type="button"
+          aria-label="Show photo 3"></button>
+      </div>
+
+    </div>
+  </div>
+</section>
 
     <section id="membership">
       <div class="container">
@@ -504,7 +674,98 @@ membershipForm.addEventListener('submit', async event => {
     submitButton.textContent = originalSubmitLabel;
   }
 });
+// OGPH Automatic Gallery Slideshow
+(function () {
 
+  const gallery = document.getElementById('ogph-gallery');
+
+  if (!gallery) return;
+
+  const slides = gallery.querySelectorAll('.gallery-slide');
+  const dots = gallery.querySelectorAll('.gallery-dot');
+
+  const previous = gallery.querySelector('.gallery-prev');
+  const next = gallery.querySelector('.gallery-next');
+
+  let currentSlide = 0;
+  let slideshowTimer;
+
+  const interval = 5000;
+
+  function showSlide(index) {
+
+    currentSlide = (index + slides.length) % slides.length;
+
+    slides.forEach((slide, i) => {
+      slide.classList.toggle('active', i === currentSlide);
+    });
+
+    dots.forEach((dot, i) => {
+      dot.classList.toggle('active', i === currentSlide);
+      dot.setAttribute('aria-pressed',
+        String(i === currentSlide));
+    });
+
+  }
+
+  function nextSlide() {
+    showSlide(currentSlide + 1);
+  }
+
+  function previousSlide() {
+    showSlide(currentSlide - 1);
+  }
+
+  function stopSlideshow() {
+    clearInterval(slideshowTimer);
+  }
+
+  function startSlideshow() {
+    stopSlideshow();
+
+    if (!window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches) {
+      slideshowTimer = setInterval(nextSlide, interval);
+    }
+  }
+
+  function restartSlideshow() {
+    startSlideshow();
+  }
+
+  previous.addEventListener('click', () => {
+    previousSlide();
+    restartSlideshow();
+  });
+
+  next.addEventListener('click', () => {
+    nextSlide();
+    restartSlideshow();
+  });
+
+  dots.forEach((dot, index) => {
+    dot.addEventListener('click', () => {
+      showSlide(index);
+      restartSlideshow();
+    });
+  });
+
+  gallery.addEventListener('mouseenter', stopSlideshow);
+  gallery.addEventListener('mouseleave', startSlideshow);
+
+  gallery.addEventListener('focusin', stopSlideshow);
+  gallery.addEventListener('focusout', event => {
+    if (!gallery.contains(event.relatedTarget)) {
+      startSlideshow();
+    }
+  });
+
+  // Start automatic slideshow.
+  showSlide(0);
+  startSlideshow();
+
+})();
 </script>
 </body>
 </html>
