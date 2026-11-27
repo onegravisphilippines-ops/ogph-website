@@ -409,7 +409,7 @@
 submitButton.textContent = 'Application Submitted Successfully';
 
       // Reset all form fields after submission
-        form.reset();
+        document.getElementById('membership-form').reset();
         
       } catch (error) {
         console.error('OGPH application submission error:', error);
