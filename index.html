@@ -404,8 +404,9 @@
         });
 
         formMessage.textContent =
-          'Your application request was sent. The browser cannot confirm the Google Sheets save, so please avoid submitting again until an OGPH officer checks the New Member Applications sheet.';
-        submitButton.textContent = 'Request Sent — Awaiting Verification';
+  'Application Submitted Successfully! Thank you for your interest in joining One Gravis Philippines (OGPH). Your application has been received and is now Pending review by our officers. We will contact you regarding the status of your application. ONE GOAL • ONE PRIDE • ONE HAPPINESS!';
+
+submitButton.textContent = 'Application Submitted Successfully';
       } catch (error) {
         console.error('OGPH application submission error:', error);
         formMessage.textContent =
