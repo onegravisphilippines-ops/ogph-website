@@ -21,8 +21,14 @@
     html{scroll-behavior:smooth;scroll-padding-top:88px}
     body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);font-size:16px;line-height:1.65}
     a{color:inherit}
-    img{max-width:100%;display:block}
+    img{display:block;max-width:100%;height:auto}
     .container{width:min(var(--max),calc(100% - 40px));margin-inline:auto}
+    /* Keep every content image inside its frame without stretching. */
+    .photo{display:block;width:100%;height:100%;min-height:360px;max-height:520px;object-fit:cover;object-position:center;border-radius:var(--radius)}
+    .gallery figure{min-width:0;overflow:hidden}
+    .gallery img{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;object-position:center}
+    .brand img{flex:0 0 auto}
+    .hero{background-size:cover}
     .skip{position:absolute;left:-9999px;top:8px;background:#fff;color:#111;padding:10px;z-index:99}
     .skip:focus{left:8px}
     header{position:sticky;top:0;z-index:20;background:rgba(17,19,24,.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
@@ -99,15 +105,44 @@
     .copyright{border-top:1px solid #272c35;margin-top:35px;padding-top:20px;color:#929aa7;font-size:13px}
     .fb{display:inline-flex!important;align-items:center;gap:8px;margin-top:8px;color:#8fc7ff}
     @media(max-width:900px){
+      .container{width:min(var(--max),calc(100% - 32px))}
       nav{display:none;position:absolute;top:78px;left:0;right:0;padding:18px 22px 24px;background:#111318;border-bottom:1px solid var(--line);flex-direction:column;align-items:stretch}
-      nav.open{display:flex}nav a{padding:8px 0}.menu-toggle{display:block}
+      nav.open{display:flex}nav a{padding:10px 0;min-height:44px}.menu-toggle{display:block;min-width:44px;min-height:44px}
       .nav>.btn{display:none}.three{grid-template-columns:1fr 1fr}.split,.form-wrap{grid-template-columns:1fr}
+      .photo{height:auto;min-height:0;max-height:460px;aspect-ratio:16/10}
     }
     @media(max-width:620px){
-      .container{width:min(100% - 28px,var(--max))}.hero{min-height:590px}.hero:before{background:linear-gradient(90deg,rgba(8,10,14,.92),rgba(8,10,14,.62)),url("images/ogph-hero-riders.jpg") 58% center/cover no-repeat}
-      section{padding:65px 0}.three,.two,.stats,.values,.form-grid,.footer-grid{grid-template-columns:1fr}
-      .band .container{align-items:flex-start;flex-direction:column}.card,form{padding:22px}
-      .brand img{width:46px;height:46px}.brand{font-size:14px}
+      .container{width:calc(100% - 28px)}
+      .nav{min-height:70px;gap:10px}
+      header nav{top:70px}
+      .brand{font-size:12px;letter-spacing:.02em;gap:8px;max-width:calc(100% - 60px)}
+      .brand img{width:42px;height:42px}
+      .brand small{font-size:8px;letter-spacing:.1em}
+      .hero{min-height:570px}
+      .hero:before{background:linear-gradient(90deg,rgba(8,10,14,.94),rgba(8,10,14,.68)),url("images/ogph-hero-riders.jpg") 58% center/cover no-repeat}
+      .hero-copy{padding:70px 0}
+      h1{font-size:clamp(2.45rem,12vw,4rem)}
+      h2{font-size:clamp(1.9rem,9vw,2.6rem)}
+      section{padding:58px 0}
+      .three,.two,.stats,.values,.form-grid,.footer-grid{grid-template-columns:1fr}
+      .band .container{align-items:flex-start;flex-direction:column}
+      .card,form{padding:20px}
+      .photo{width:100%;height:auto;min-height:0;max-height:none;aspect-ratio:4/3;object-fit:cover}
+      .gallery img{width:100%;height:auto;aspect-ratio:16/9;object-fit:cover}
+      .actions{flex-direction:column;align-items:stretch}
+      .actions .btn,.band .btn{width:100%}
+      .field{min-width:0}
+      input,select,textarea{font-size:16px}
+      .form-wrap{gap:18px}
+      .stats{gap:10px}
+      .stat{padding:15px}
+      .band{padding:42px 0}
+    }
+    @media(max-width:380px){
+      .brand span{font-size:11px}
+      .brand small{font-size:7px}
+      .menu-toggle{padding:8px}
+      .hero{min-height:540px}
     }
   </style>
 </head>
@@ -137,7 +172,7 @@
           <p>We bring riders together through friendship, respect, discipline and a shared passion for the road. Wherever the ride takes us, we move forward as one community.</p>
           <div class="motto">ONE GOAL <span style="color:#ff7777">•</span> ONE PRIDE <span style="color:#8fc7ff">•</span> ONE HAPPINESS</div>
           <div class="actions">
-            <a class="btn" href="#membership">Become a Rookie</a>
+            <a class="btn" href="#membership">Become an Aspirant</a>
             <a class="btn outline" href="#about">Discover OGPH</a>
           </div>
         </div>
@@ -224,8 +259,8 @@
             <div class="values">
               <div class="value">01 <span>Submit your application</span></div>
               <div class="value">02 <span>Application review</span></div>
-              <div class="value">03 <span>Attend 1 EB Meet and Greet and 1 Official Ride</span></div>
-              <div class="value">04 <span>Approval and Membership onboarding</span></div>
+              <div class="value">03 <span>Orientation and familiarization</span></div>
+              <div class="value">04 <span>Membership evaluation</span></div>
             </div>
             <div class="notice"><strong>Important:</strong> Submitting this form does not automatically make an applicant an Official Member. Applications are subject to the OGPH membership process and approval.</div>
           </aside>
@@ -233,7 +268,7 @@
           <form id="membership-form" action="#" method="post">
             <h3>Applicant Information</h3>
             <div class="form-grid">
-              <div class="field"><label for="member-type">Member Type *</label><select id="member-type" name="member_type" required><option value="Rookie">Rookie</option></select></div>
+              <div class="field"><label for="member-type">Member Type *</label><select id="member-type" name="member_type" required><option value="Aspirant">Aspirant</option></select></div>
               <div class="field"><label for="full-name">Full Name *</label><input id="full-name" name="full_name" autocomplete="name" required></div>
               <div class="field"><label for="nickname">Nickname *</label><input id="nickname" name="nickname" required></div>
               <div class="field"><label for="location">Location / City *</label><input id="location" name="location" autocomplete="address-level2" required></div>
