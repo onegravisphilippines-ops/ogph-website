@@ -387,47 +387,84 @@ document.querySelector('#mv-expiry').min = minimumExpiryDate;
   });
 });
     
-    // OGPH membership application endpoint (Google Apps Script Web App)
-    const OGPH_APPLICATION_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxamXDFY8qffXvkL4L53QKc2uyjtU3OGKt_PUc4ikH_Q5qxIu3oaZKXruhLp_cavo60/exec';
+    
+// OGPH membership application endpoint (Google Apps Script Web App)
+const OGPH_APPLICATION_ENDPOINT =
+  'https://script.google.com/macros/s/AKfycbxamXDFY8qffXvkL4L53QKc2uyjtU3OGKt_PUc4ikH_Q5qxIu3oaZKXruhLp_cavo60/exec';
 
-    const membershipForm = document.querySelector('#membership-form');
-    const formMessage = document.querySelector('#form-message');
-    const submitButton = membershipForm.querySelector('button[type="submit"]');
-    const originalSubmitLabel = submitButton.textContent;
+const membershipForm = document.querySelector('#membership-form');
+const formMessage = document.querySelector('#form-message');
+const submitButton = membershipForm.querySelector('button[type="submit"]');
+const originalSubmitLabel = submitButton.textContent;
 
-    function getFormValue(name) {
-      const field = membershipForm.querySelector('[name="' + name + '"]');
-      return field ? field.value.trim() : '';
-    }
+// Prevent multiple submissions while one request is in progress.
+let submissionInProgress = false;
 
+// Keep the same ID when retrying an uncertain submission.
+const SUBMISSION_ID_KEY = 'ogph_pending_application_submission_id';
+
+function createSubmissionId() {
+  if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+    return window.crypto.randomUUID();
+  }
+
+  return 'ogph-' + Date.now() + '-' +
+    Math.random().toString(36).substring(2, 12);
+}
+
+function getOrCreateSubmissionId() {
+  let id = sessionStorage.getItem(SUBMISSION_ID_KEY);
+
+  if (!id) {
+    id = createSubmissionId();
+    sessionStorage.setItem(SUBMISSION_ID_KEY, id);
+  }
+
+  return id;
+}
+
+function getFormValue(name) {
+  const field = membershipForm.querySelector('[name="' + name + '"]');
+  return field ? field.value.trim() : '';
+}
 
 membershipForm.addEventListener('submit', async event => {
   event.preventDefault();
 
+  // Block rapid clicks and repeated submit events.
+  if (submissionInProgress) return;
+
+  // Validate all required fields and custom expiry-date rules.
   if (!membershipForm.reportValidity()) return;
 
-  const payload = {
-    memberType: getFormValue('member_type'),
-    fullName: getFormValue('full_name'),
-    nickname: getFormValue('nickname'),
-    location: getFormValue('location'),
-    homeAddress: getFormValue('home_address'),
-    contactNumber: getFormValue('contact_number'),
-    emailAddress: getFormValue('email'),
-    licenseExpiry: getFormValue('license_expiry'),
-    mvExpiry: getFormValue('mv_expiry'),
-    plateNo: getFormValue('plate_no'),
-    emergencyContact: getFormValue('emergency_contact'),
-    fbProfileLink: getFormValue('fb_profile_link'),
-    privacyConsent: membershipForm.querySelector('[name="privacy_consent"]').checked
-  };
-
+  submissionInProgress = true;
   submitButton.disabled = true;
   submitButton.textContent = 'Submitting…';
   formMessage.textContent = 'Sending your application. Please wait…';
 
-  // STEP 1: Submit application
+  let requestSent = false;
+
   try {
+    const payload = {
+      submissionId: getOrCreateSubmissionId(),
+
+      memberType: getFormValue('member_type'),
+      fullName: getFormValue('full_name'),
+      nickname: getFormValue('nickname'),
+      location: getFormValue('location'),
+      homeAddress: getFormValue('home_address'),
+      contactNumber: getFormValue('contact_number'),
+      emailAddress: getFormValue('email'),
+      licenseExpiry: getFormValue('license_expiry'),
+      mvExpiry: getFormValue('mv_expiry'),
+      plateNo: getFormValue('plate_no'),
+      emergencyContact: getFormValue('emergency_contact'),
+      fbProfileLink: getFormValue('fb_profile_link'),
+      privacyConsent: membershipForm.querySelector(
+        '[name="privacy_consent"]'
+      ).checked
+    };
+
     await fetch(OGPH_APPLICATION_ENDPOINT, {
       method: 'POST',
       mode: 'no-cors',
@@ -437,32 +474,33 @@ membershipForm.addEventListener('submit', async event => {
       body: JSON.stringify(payload)
     });
 
-  } catch (error) {
-    console.error('OGPH submission error:', error);
+    requestSent = true;
 
+    // The request was sent. The no-cors connection cannot verify
+    // whether Google Apps Script successfully saved the application.
     formMessage.textContent =
-      'We could not send your application. Please check your internet connection and try again.';
+      'Your application request has been sent. Thank you for your interest in joining One Gravis Philippines (OGPH). The website cannot independently confirm the Google Sheets save. Our officers will contact you regarding your application.';
 
+    // Start a fresh ID for the next application.
+    sessionStorage.removeItem(SUBMISSION_ID_KEY);
+
+    // Reset the form after the request has been sent.
+    membershipForm.reset();
+
+  } catch (error) {
+    console.error('OGPH application submission error:', error);
+
+    // Keep the submission ID so a retry uses the same ID.
+    formMessage.textContent =
+      'We could not send your application. Please check your internet connection and try again. Your entered information has been retained.';
+
+  } finally {
+    submissionInProgress = false;
     submitButton.disabled = false;
     submitButton.textContent = originalSubmitLabel;
-    return;
   }
-
-  // STEP 2: Display success message
-  formMessage.textContent =
-    'Application Submitted Successfully! Thank you for your interest in joining One Gravis Philippines (OGPH). Your application has been received and is now Pending review by our officers. We will contact you regarding the status of your application.';
-
-  // STEP 3: Reset the form separately
-  try {
-    membershipForm.reset();
-  } catch (resetError) {
-    console.error('OGPH form reset error:', resetError);
-  }
-
-  // STEP 4: Restore the submit button
-  submitButton.disabled = false;
-  submitButton.textContent = originalSubmitLabel;
 });
+
 </script>
 </body>
 </html>
