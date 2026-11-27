@@ -407,6 +407,10 @@
   'Application Submitted Successfully! Thank you for your interest in joining One Gravis Philippines (OGPH). Your application has been received and is now Pending review by our officers. We will contact you regarding the status of your application.';
 
 submitButton.textContent = 'Application Submitted Successfully';
+
+      // Reset all form fields after submission
+        form.reset();
+        
       } catch (error) {
         console.error('OGPH application submission error:', error);
         formMessage.textContent =
