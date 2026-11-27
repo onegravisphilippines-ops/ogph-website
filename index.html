@@ -354,6 +354,39 @@
       toggle.setAttribute('aria-expanded', 'false');
     }));
     document.querySelector('#year').textContent = new Date().getFullYear();
+
+    // Require future dates for license and MV expiry
+function getTomorrowDate() {
+  const date = new Date();
+  date.setDate(date.getDate() + 1);
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
+const minimumExpiryDate = getTomorrowDate();
+
+document.querySelector('#license-expiry').min = minimumExpiryDate;
+document.querySelector('#mv-expiry').min = minimumExpiryDate;
+
+    // Show a clear error if an invalid expiry date is entered
+['license-expiry', 'mv-expiry'].forEach(id => {
+  const field = document.getElementById(id);
+
+  field.addEventListener('input', () => {
+    if (field.value && field.value < minimumExpiryDate) {
+      field.setCustomValidity(
+        'Please select a future expiration date. Past dates and today are not allowed.'
+      );
+    } else {
+      field.setCustomValidity('');
+    }
+  });
+});
+    
     // OGPH membership application endpoint (Google Apps Script Web App)
     const OGPH_APPLICATION_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxamXDFY8qffXvkL4L53QKc2uyjtU3OGKt_PUc4ikH_Q5qxIu3oaZKXruhLp_cavo60/exec';
 
