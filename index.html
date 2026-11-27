@@ -354,11 +354,64 @@
       toggle.setAttribute('aria-expanded', 'false');
     }));
     document.querySelector('#year').textContent = new Date().getFullYear();
-    document.querySelector('#membership-form').addEventListener('submit', event => {
-      event.preventDefault();
-      document.querySelector('#form-message').textContent =
-        'Preview only: the application form is not connected yet. Connect it to OGPH’s secure membership backend before accepting submissions.';
+    
+const SCRIPT_URL = "PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE";
+
+const membershipForm = document.querySelector('#membership-form');
+const formMessage = document.querySelector('#form-message');
+const submitButton = membershipForm.querySelector('button[type="submit"]');
+
+membershipForm.addEventListener('submit', async event => {
+  event.preventDefault();
+
+  const payload = {
+    memberType: membershipForm.elements.member_type.value,
+    fullName: membershipForm.elements.full_name.value,
+    nickname: membershipForm.elements.nickname.value,
+    location: membershipForm.elements.location.value,
+    homeAddress: membershipForm.elements.home_address.value,
+    contactNumber: membershipForm.elements.contact_number.value,
+    emailAddress: membershipForm.elements.email.value,
+    licenseExpiry: membershipForm.elements.license_expiry.value,
+    mvExpiry: membershipForm.elements.mv_expiry.value,
+    plateNo: membershipForm.elements.plate_no.value,
+    emergencyContact: membershipForm.elements.emergency_contact.value,
+    fbProfileLink: membershipForm.elements.fb_profile_link.value,
+    privacyConsent: membershipForm.elements.privacy_consent.checked
+  };
+
+  if (SCRIPT_URL.includes("PASTE_YOUR")) {
+    formMessage.textContent = "Website connection is not configured yet.";
+    return;
+  }
+
+  submitButton.disabled = true;
+  submitButton.textContent = "Submitting...";
+  formMessage.textContent = "Please wait while we send your application.";
+
+  try {
+    await fetch(SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify(payload)
     });
+
+    formMessage.textContent =
+      "Your application submission request has been sent. Please verify its receipt with an OGPH officer.";
+
+  } catch (error) {
+    formMessage.textContent =
+      "Unable to send your application. Please check your internet connection and try again.";
+
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = "Submit Membership Application";
+  }
+});
+
   </script>
 </body>
 </html>
